@@ -37,17 +37,20 @@ defmodule Aoc6 do
         %{},
         fn [dest, src], acc ->
           Map.put_new(acc, src, [])
-          {_, map} = Map.get_and_update(
-            acc,
-            src,
-            fn current ->
-              if current == nil do
-                {current, [dest]}
-              else
-                {current, [dest | current]}
+
+          {_, map} =
+            Map.get_and_update(
+              acc,
+              src,
+              fn current ->
+                if current == nil do
+                  {current, [dest]}
+                else
+                  {current, [dest | current]}
+                end
               end
-            end
-          )
+            )
+
           map
         end
       )
@@ -58,15 +61,22 @@ defmodule Aoc6 do
     {_, orbits} = Aoc6.build_orbits(links)
     san = Aoc6.find_orbits("YOU", orbits, [])
     you = Aoc6.find_orbits("SAN", orbits, [])
-    bridge = Enum.zip(san, you) |> Enum.reverse |> Enum.drop_while(fn {l, r} -> l != r end) |> Enum.at(0) |> elem(0)
-    san_jumps = Enum.drop_while(san, fn x -> x != bridge end) |> Enum.drop(1) |> Enum.count
-    you_jumps = Enum.drop_while(you, fn x -> x != bridge end) |> Enum.drop(1) |> Enum.count
+
+    bridge =
+      Enum.zip(san, you)
+      |> Enum.reverse()
+      |> Enum.drop_while(fn {l, r} -> l != r end)
+      |> Enum.at(0)
+      |> elem(0)
+
+    san_jumps = Enum.drop_while(san, fn x -> x != bridge end) |> Enum.drop(1) |> Enum.count()
+    you_jumps = Enum.drop_while(you, fn x -> x != bridge end) |> Enum.drop(1) |> Enum.count()
     san_jumps + you_jumps
   end
 
   def distance_from_com(links) do
     {nodes, orbits} = build_orbits(links)
-    Enum.map(nodes, fn x -> Aoc6.count_orbits(x, orbits, 0) end) |> Enum.sum
+    Enum.map(nodes, fn x -> Aoc6.count_orbits(x, orbits, 0) end) |> Enum.sum()
   end
 
   def part1() do

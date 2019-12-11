@@ -11,8 +11,10 @@ defmodule Aoc8Test do
   end
 
   test "part 2 example 1" do
-    digits = Aoc8.load("0222112222120000")
-             |> Aoc8.build(2, 2)
+    digits =
+      Aoc8.load("0222112222120000")
+      |> Aoc8.build(2, 2)
+
     Aoc8.draw("output/test.png", digits, 2, 2)
     IO.puts("You need to check output/test.png looks like a chessboard.")
     assert true

@@ -3,7 +3,7 @@ defmodule Aoc2 do
     File.read!("input/2")
     |> String.split(",")
     |> Enum.map(&String.to_integer/1)
-    |> List.to_tuple
+    |> List.to_tuple()
   end
 
   def narg3(program, pc) do
@@ -45,31 +45,40 @@ defmodule Aoc2 do
   end
 
   def part2() do
-    goal = 19690720
-    r = Enum.find_value(
-      0..100,
-      fn n ->
-        v = Enum.find(
-          0..100,
-          fn v ->
-            result = load()
-                     |> hack(n, v)
-                     |> run()
-                     |> elem(1)
-                     |> elem(0)
-            result == goal
-          end
-        )
-        v != nil && {n, v}
-      end
-    )
+    goal = 19_690_720
+
+    r =
+      Enum.find_value(
+        0..100,
+        fn n ->
+          v =
+            Enum.find(
+              0..100,
+              fn v ->
+                result =
+                  load()
+                  |> hack(n, v)
+                  |> run()
+                  |> elem(1)
+                  |> elem(0)
+
+                result == goal
+              end
+            )
+
+          v != nil && {n, v}
+        end
+      )
+
     100 * elem(r, 0) + elem(r, 1)
   end
 
   def part1() do
-    {:halt, program, _} = load()
-                          |> hack()
-                          |> run()
+    {:halt, program, _} =
+      load()
+      |> hack()
+      |> run()
+
     program
     |> elem(0)
   end

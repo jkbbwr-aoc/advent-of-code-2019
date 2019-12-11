@@ -7,6 +7,7 @@ defmodule Aoc3 do
   def parse(instruction) do
     direction = String.first(instruction)
     {distance, ""} = Integer.parse(String.slice(instruction, 1..-1))
+
     case direction do
       "R" -> {:right, distance}
       "L" -> {:left, distance}
@@ -23,12 +24,15 @@ defmodule Aoc3 do
         [h | _] = acc
         {x, y} = h
         {direction, distance} = v
-        {point, rest} = case direction do
-          :up -> {{x, y + distance}, (for i <- y..(y + distance), do: {x, i})}
-          :down -> {{x, y - distance}, (for i <- y..(y - distance), do: {x, i})}
-          :left -> {{x - distance, y}, (for i <- x..(x - distance), do: {i, y})}
-          :right -> {{x + distance, y}, (for i <- x..(x + distance), do: {i, y})}
-        end
+
+        {point, rest} =
+          case direction do
+            :up -> {{x, y + distance}, for(i <- y..(y + distance), do: {x, i})}
+            :down -> {{x, y - distance}, for(i <- y..(y - distance), do: {x, i})}
+            :left -> {{x - distance, y}, for(i <- x..(x - distance), do: {i, y})}
+            :right -> {{x + distance, y}, for(i <- x..(x + distance), do: {i, y})}
+          end
+
         [point | Enum.reverse(rest)] ++ acc
       end
     )
@@ -37,15 +41,17 @@ defmodule Aoc3 do
   def plot_wires(wires) do
     [line1, line2] = wires
 
-    wire1 = line1
-            |> String.split(",")
-            |> Enum.map(&parse/1)
-            |> plot_wire
+    wire1 =
+      line1
+      |> String.split(",")
+      |> Enum.map(&parse/1)
+      |> plot_wire
 
-    wire2 = line2
-            |> String.split(",")
-            |> Enum.map(&parse/1)
-            |> plot_wire
+    wire2 =
+      line2
+      |> String.split(",")
+      |> Enum.map(&parse/1)
+      |> plot_wire
 
     {
       wire1,
@@ -62,22 +68,28 @@ defmodule Aoc3 do
     plan
     |> Enum.reject(fn {x, y} -> x == 0 && y == 0 end)
     |> Enum.map(fn {x, y} -> abs(x) + abs(y) end)
-    |> Enum.min
+    |> Enum.min()
   end
 
   def signal_delay(plan) do
     {wire1, wire2, intersection} = plan
-    wire1 = Enum.reverse(wire1)
-            |> Enum.dedup
-    wire2 = Enum.reverse(wire2)
-            |> Enum.dedup
+
+    wire1 =
+      Enum.reverse(wire1)
+      |> Enum.dedup()
+
+    wire2 =
+      Enum.reverse(wire2)
+      |> Enum.dedup()
 
     Enum.map(
       intersection,
-      fn x -> {Enum.find_index(wire1, fn y -> x == y end), Enum.find_index(wire2, fn y -> x == y end)} end
+      fn x ->
+        {Enum.find_index(wire1, fn y -> x == y end), Enum.find_index(wire2, fn y -> x == y end)}
+      end
     )
     |> Enum.map(fn {x, y} -> x + y end)
-    |> Enum.min
+    |> Enum.min()
   end
 
   def part1() do

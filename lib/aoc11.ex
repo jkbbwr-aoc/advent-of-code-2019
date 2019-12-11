@@ -1,8 +1,8 @@
-defmodule Aoc9 do
+defmodule Aoc11 do
   require Logger
 
   def load() do
-    File.read!("input/9")
+    File.read!("input/11")
     |> String.split(",")
     |> Enum.map(&String.to_integer/1)
   end
@@ -10,10 +10,6 @@ defmodule Aoc9 do
   def load(program) do
     String.split(program, ",")
     |> Enum.map(&String.to_integer/1)
-  end
-
-  def debug({modes, opcode}, pc, rp) do
-    Logger.debug("INSTR: #{opcode} PC: #{pc} RP: #{rp} MODES: #{inspect(modes)}")
   end
 
   def decode(value) do
@@ -92,6 +88,8 @@ defmodule Aoc9 do
   end
 
   def write(mode, program, position, value, relative) when mode == :relative do
+    position = Enum.at(program, position) + relative
+
     program =
       if position > Enum.count(program) do
         program ++ List.duplicate(0, position)
@@ -99,16 +97,11 @@ defmodule Aoc9 do
         program
       end
 
-    position = Enum.at(program, position) + relative
     List.replace_at(program, position, value)
   end
 
   def write(mode, _program, _position, _value, _relative) when mode == :immediate do
     throw("Can't write immediate.")
-  end
-
-  def write_directly(program, position, value) do
-    List.replace_at(program, position, value)
   end
 
   def step({modes, opcode}, program, input, output, pc, rp) when opcode == 1 do
@@ -124,6 +117,7 @@ defmodule Aoc9 do
     program = write(modes[3], program, pc + 3, left * right, rp)
     {:continue, program, input, output, pc + 4, rp}
   end
+
 
   def step({modes, opcode}, program, input, output, pc, rp) when opcode == 3 do
     case input do
@@ -156,7 +150,6 @@ defmodule Aoc9 do
   def step({modes, opcode}, program, input, output, pc, rp) when opcode == 6 do
     first = read(modes[1], program, pc + 1, rp)
     second = read(modes[2], program, pc + 2, rp)
-
     if first == 0 do
       {:continue, program, input, output, second, rp}
     else
@@ -209,15 +202,167 @@ defmodule Aoc9 do
     end
   end
 
+  defmodule Panel do
+    defstruct color: :black, painted: false
+  end
+
+  def from_color(:white), do: 1
+  def from_color(:black), do: 0
+  def to_color(0), do: :black
+  def to_color(1), do: :white
+
+  # Left
+  def transform(pos, facing, 0) do
+    {x, y} = pos
+
+    case facing do
+      # If I am facing up, I will turn left
+      # Then move 1 square forward.
+      :up -> {{x - 1, y}, :left}
+      :left -> {{x, y - 1}, :down}
+      :down -> {{x + 1, y}, :right}
+      :right -> {{x, y + 1}, :up}
+    end
+  end
+
+  # Right
+  def transform(pos, facing, 1) do
+    {x, y} = pos
+
+    case facing do
+      :up -> {{x + 1, y}, :right}
+      :right -> {{x, y - 1}, :down}
+      :down -> {{x - 1, y}, :left}
+      :left -> {{x, y + 1}, :up}
+    end
+  end
+
+  def do_the_robot(output, pos, facing, grid) do
+    panel = grid[pos]
+    [direction, code] = output
+    panel = %{panel | color: to_color(code), painted: true}
+
+    grid =
+      Map.update(
+        grid,
+        pos,
+        panel,
+        fn _value ->
+          panel
+        end
+      )
+
+    {pos, facing} = transform(pos, facing, direction)
+    {pos, facing, grid}
+  end
+
+  def robot(pc_state, pos, facing, grid) do
+    {program, pc, rp} = pc_state
+    # Get the colour of the current square.
+    grid = Map.put_new(grid, pos, %Panel{})
+    panel = grid[pos]
+    color = from_color(panel.color)
+
+    case Aoc11.run(program, [color], [], pc, rp) do
+      {:halt, _, _, output, _, _} ->
+        {_, _, grid} = do_the_robot(output, pos, facing, grid)
+        grid
+
+      {:blocked, program, _, output, pc, rp} ->
+        {pos, facing, grid} = do_the_robot(output, pos, facing, grid)
+        robot({program, pc, rp}, pos, facing, grid)
+    end
+  end
+
+  def vanity() do
+    grid = %{
+      {0, 0} => %Aoc11.Panel{
+        color: :white
+      }
+    }
+    painted = robot(
+      {
+        load(),
+        0,
+        0
+      },
+      {0, 0},
+      :up,
+      grid
+    )
+
+    image = :egd.create(41, 8)
+    black = :egd.color({:black, 0})
+    white = :egd.color({255, 255, 255})
+
+    Enum.each(
+      -1..6,
+      fn y ->
+        Enum.each(
+          0..40,
+          fn x ->
+            panel = painted[{x, -y}]
+            panel = if panel == nil do
+              %Panel{}
+            else
+              panel
+            end
+
+            case panel.color do
+              :white -> :egd.line(image, {x, y+1}, {x, y+1}, white)
+              :black -> :egd.line(image, {x, y+1}, {x, y+1}, black)
+            end
+          end
+        )
+      end
+    )
+    File.write!("output/11.png", :egd.render(image))
+    :egd.destroy(image)
+  end
+
   def part1() do
-    program = Aoc9.load()
-    {:halt, _program, _input, [output], _pc, _rp} = Aoc9.run(program, [1], [])
-    output
+    grid = %{{0, 0} => %Aoc11.Panel{}}
+    robot({load(), 0, 0}, {0, 0}, :up, grid)
+    |> Enum.count
   end
 
   def part2() do
-    program = Aoc9.load()
-    {:halt, _program, _input, [output], _pc, _rp} = Aoc9.run(program, [2], [])
-    output
+    grid = %{
+      {0, 0} => %Aoc11.Panel{
+        color: :white
+      }
+    }
+    painted = robot(
+      {
+        load(),
+        0,
+        0
+      },
+      {0, 0},
+      :up,
+      grid
+    )
+    Enum.each(
+      -1..6,
+      fn y ->
+        Enum.each(
+          0..40,
+          fn x ->
+            panel = painted[{x, -y}]
+            panel = if panel == nil do
+              %Panel{}
+            else
+              panel
+            end
+
+            case panel.color do
+              :white -> IO.write(" ")
+              :black -> IO.write("█")
+            end
+          end
+        )
+        IO.write("\n")
+      end
+    )
   end
 end

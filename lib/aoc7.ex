@@ -3,33 +3,39 @@ defmodule Aoc7 do
     File.read!("input/7")
     |> String.split(",")
     |> Enum.map(&String.to_integer/1)
-    |> List.to_tuple
+    |> List.to_tuple()
   end
 
   def load(program) do
     String.split(program, ",")
     |> Enum.map(&String.to_integer/1)
-    |> List.to_tuple
+    |> List.to_tuple()
   end
 
   def decode(value) do
     digits = Integer.digits(value)
-    instruction = case Enum.slice(digits, -2, 2) do
-      [] -> digits
-      x -> x
-    end
+
+    instruction =
+      case Enum.slice(digits, -2, 2) do
+        [] -> digits
+        x -> x
+      end
+
     rest = Enum.drop(digits, -2)
     modes = List.duplicate(0, 3 - Enum.count(rest)) ++ rest
+
     {
       Enum.reduce(
         Enum.with_index(Enum.reverse(modes), 1),
         %{},
         fn {x, i}, acc ->
-          mode = case x do
-            0 -> :position
-            1 -> :immediate
-            _ -> throw("Bad addressing mode #{x}")
-          end
+          mode =
+            case x do
+              0 -> :position
+              1 -> :immediate
+              _ -> throw("Bad addressing mode #{x}")
+            end
+
           Map.put(acc, i, mode)
         end
       ),
@@ -37,8 +43,11 @@ defmodule Aoc7 do
     }
   end
 
-  def permutations([]), do: [[]] # <-- (!)
-  def permutations(list), do: for elem <- list, rest <- permutations(list -- [elem]), do: [elem | rest]
+  # <-- (!)
+  def permutations([]), do: [[]]
+
+  def permutations(list),
+    do: for(elem <- list, rest <- permutations(list -- [elem]), do: [elem | rest])
 
   def read(mode, program, position) when mode == :position do
     elem(program, elem(program, position))
@@ -79,6 +88,7 @@ defmodule Aoc7 do
       [value | input] ->
         program = write(modes[1], program, pc + 1, value)
         {:continue, program, input, output, pc + 2}
+
       [] ->
         {:blocked, program, input, output, pc}
     end
@@ -87,12 +97,13 @@ defmodule Aoc7 do
   def step({modes, opcode}, program, input, output, pc) when opcode == 4 do
     value = read(modes[1], program, pc + 1)
     output = [value | output]
-    {:continue, program, input, output, pc + 2, }
+    {:continue, program, input, output, pc + 2}
   end
 
   def step({modes, opcode}, program, input, output, pc) when opcode == 5 do
     first = read(modes[1], program, pc + 1)
     second = read(modes[2], program, pc + 2)
+
     if first != 0 do
       {:continue, program, input, output, second}
     else
@@ -103,6 +114,7 @@ defmodule Aoc7 do
   def step({modes, opcode}, program, input, output, pc) when opcode == 6 do
     first = read(modes[1], program, pc + 1)
     second = read(modes[2], program, pc + 2)
+
     if first == 0 do
       {:continue, program, input, output, second}
     else
@@ -113,20 +125,21 @@ defmodule Aoc7 do
   def step({modes, opcode}, program, input, output, pc) when opcode == 7 do
     first = read(modes[1], program, pc + 1)
     second = read(modes[2], program, pc + 2)
-    program = write(modes[3], program, pc + 3, (if first < second, do: 1, else: 0))
+    program = write(modes[3], program, pc + 3, if(first < second, do: 1, else: 0))
     {:continue, program, input, output, pc + 4}
   end
 
   def step({modes, opcode}, program, input, output, pc) when opcode == 8 do
     first = read(modes[1], program, pc + 1)
     second = read(modes[2], program, pc + 2)
-    program = write(modes[3], program, pc + 3, (if first == second, do: 1, else: 0))
+    program = write(modes[3], program, pc + 3, if(first == second, do: 1, else: 0))
     {:continue, program, input, output, pc + 4}
   end
 
   def run(program, input, output, pc \\ 0) do
     instruction = elem(program, pc)
     opcode = decode(instruction)
+
     case step(opcode, program, input, output, pc) do
       {:halt, program, input, output, pc} -> {:halt, program, input, output, pc}
       {:blocked, program, input, output, pc} -> {:blocked, program, input, output, pc}
@@ -159,23 +172,27 @@ defmodule Aoc7 do
 
   def feedback(thunks, out) when length(thunks) == 1 do
     [{:halt, _, _, output, _}] = thunks
-    [output | out] |> List.flatten |> Enum.max
+    [output | out] |> List.flatten() |> Enum.max()
   end
 
   def feedback([first | thunks], out) do
     case first do
       {:halt, _, _, output, _} ->
         [{:blocked, second_program, _, second_output, second_pc} | thunks] = thunks
+
         feedback(
           [run(second_program, output, second_output, second_pc) | thunks],
-          [output|out]
+          [output | out]
         )
+
       {:blocked, first_program, first_input, first_output, first_pc} ->
         [{:blocked, second_program, _, second_output, second_pc} | thunks] = thunks
+
         feedback(
-          [run(second_program, first_output, second_output, second_pc) | thunks] ++ [
-            {:blocked, first_program, first_input, [], first_pc}
-          ],
+          [run(second_program, first_output, second_output, second_pc) | thunks] ++
+            [
+              {:blocked, first_program, first_input, [], first_pc}
+            ],
           out
         )
     end
@@ -184,24 +201,30 @@ defmodule Aoc7 do
   def part1() do
     program = load()
     perms = permutations([0, 1, 2, 3, 4])
-    values = Enum.map(
-      perms,
-      fn guess ->
-        cascade(program, guess)
-      end
-    )
+
+    values =
+      Enum.map(
+        perms,
+        fn guess ->
+          cascade(program, guess)
+        end
+      )
+
     Enum.max(values)
   end
 
   def part2() do
     program = load()
     perms = permutations([5, 6, 7, 8, 9])
-    values = Enum.map(
-      perms,
-      fn guess ->
-        feedback(program, guess)
-      end
-    )
+
+    values =
+      Enum.map(
+        perms,
+        fn guess ->
+          feedback(program, guess)
+        end
+      )
+
     Enum.max(values)
   end
 end

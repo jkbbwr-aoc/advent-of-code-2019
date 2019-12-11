@@ -9,7 +9,7 @@ defmodule Aoc6Test do
   end
 
   test "part 1" do
-    assert Aoc6.part1() == 251208
+    assert Aoc6.part1() == 251_208
   end
 
   test "part 2 example 1" do

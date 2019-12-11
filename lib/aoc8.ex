@@ -1,14 +1,19 @@
 defmodule Aoc8 do
   def load() do
-    digits = File.read!("input/8")
-             |> String.to_integer
-             |> Integer.digits
-    [0 | digits] # My input started with a 0. Fuck my life.
+    digits =
+      File.read!("input/8")
+      |> String.to_integer()
+      |> Integer.digits()
+
+    # My input started with a 0. Fuck my life.
+    [0 | digits]
   end
 
   def load(input) do
-    digits = String.to_integer(input)
-             |> Integer.digits
+    digits =
+      String.to_integer(input)
+      |> Integer.digits()
+
     if String.starts_with?(input, "0") do
       [0 | digits]
     else
@@ -34,10 +39,12 @@ defmodule Aoc8 do
     white = :egd.color({255, 255, 255})
     layers = Enum.reverse(layers)
     Enum.map(layers, fn layer -> Enum.chunk_every(layer, width) end)
+
     Enum.each(
       layers,
       fn layer ->
         rows = Enum.chunk_every(layer, width)
+
         Enum.each(
           Enum.with_index(rows),
           fn {pixels, row} ->
@@ -55,6 +62,7 @@ defmodule Aoc8 do
         )
       end
     )
+
     File.write!(name, :egd.render(image))
     :egd.destroy(image)
   end
