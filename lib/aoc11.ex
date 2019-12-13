@@ -118,7 +118,6 @@ defmodule Aoc11 do
     {:continue, program, input, output, pc + 4, rp}
   end
 
-
   def step({modes, opcode}, program, input, output, pc, rp) when opcode == 3 do
     case input do
       [value | input] ->
@@ -150,6 +149,7 @@ defmodule Aoc11 do
   def step({modes, opcode}, program, input, output, pc, rp) when opcode == 6 do
     first = read(modes[1], program, pc + 1, rp)
     second = read(modes[2], program, pc + 2, rp)
+
     if first == 0 do
       {:continue, program, input, output, second, rp}
     else
@@ -280,16 +280,18 @@ defmodule Aoc11 do
         color: :white
       }
     }
-    painted = robot(
-      {
-        load(),
-        0,
-        0
-      },
-      {0, 0},
-      :up,
-      grid
-    )
+
+    painted =
+      robot(
+        {
+          load(),
+          0,
+          0
+        },
+        {0, 0},
+        :up,
+        grid
+      )
 
     image = :egd.create(41, 8)
     black = :egd.color({:black, 0})
@@ -302,28 +304,32 @@ defmodule Aoc11 do
           0..40,
           fn x ->
             panel = painted[{x, -y}]
-            panel = if panel == nil do
-              %Panel{}
-            else
-              panel
-            end
+
+            panel =
+              if panel == nil do
+                %Panel{}
+              else
+                panel
+              end
 
             case panel.color do
-              :white -> :egd.line(image, {x, y+1}, {x, y+1}, white)
-              :black -> :egd.line(image, {x, y+1}, {x, y+1}, black)
+              :white -> :egd.line(image, {x, y + 1}, {x, y + 1}, white)
+              :black -> :egd.line(image, {x, y + 1}, {x, y + 1}, black)
             end
           end
         )
       end
     )
+
     File.write!("output/11.png", :egd.render(image))
     :egd.destroy(image)
   end
 
   def part1() do
     grid = %{{0, 0} => %Aoc11.Panel{}}
+
     robot({load(), 0, 0}, {0, 0}, :up, grid)
-    |> Enum.count
+    |> Enum.count()
   end
 
   def part2() do
@@ -332,16 +338,19 @@ defmodule Aoc11 do
         color: :white
       }
     }
-    painted = robot(
-      {
-        load(),
-        0,
-        0
-      },
-      {0, 0},
-      :up,
-      grid
-    )
+
+    painted =
+      robot(
+        {
+          load(),
+          0,
+          0
+        },
+        {0, 0},
+        :up,
+        grid
+      )
+
     Enum.each(
       -1..6,
       fn y ->
@@ -349,11 +358,13 @@ defmodule Aoc11 do
           0..40,
           fn x ->
             panel = painted[{x, -y}]
-            panel = if panel == nil do
-              %Panel{}
-            else
-              panel
-            end
+
+            panel =
+              if panel == nil do
+                %Panel{}
+              else
+                panel
+              end
 
             case panel.color do
               :white -> IO.write(" ")
@@ -361,6 +372,7 @@ defmodule Aoc11 do
             end
           end
         )
+
         IO.write("\n")
       end
     )

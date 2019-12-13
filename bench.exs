@@ -18,6 +18,9 @@ Benchee.run(
     "AOC8_2" => (fn -> Aoc8.part2() end),
     "AOC9_1" => (fn -> Aoc9.part1() end),
     "AOC9_2" => (fn -> Aoc9.part2() end),
+    "AOC10_1" => (fn -> Aoc10.part1() end),
+    "AOC11_1" => (fn -> Aoc11.part1() end),
+    "AOC11_2" => (fn -> Aoc11.part2() end)
   },
   memory_time: 5,
   parallel: 8

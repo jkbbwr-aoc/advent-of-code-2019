@@ -75,9 +75,13 @@ defmodule Aoc10 do
 
   def solve_for_los(grid) do
     rocks =
-      Enum.reduce(grid, [], fn {cord, char}, acc ->
-        if char == "#", do: [cord | acc], else: acc
-      end)
+      Enum.reduce(
+        grid,
+        [],
+        fn {cord, char}, acc ->
+          if char == "#", do: [cord | acc], else: acc
+        end
+      )
 
     Enum.map(
       rocks,

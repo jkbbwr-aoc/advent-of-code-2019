@@ -10,8 +10,7 @@ defmodule Aoc3Test do
   end
 
   test "part 1 example 1" do
-    {_, _, intersections} =
-      Aoc3.plot_wires(["R75,D30,R83,U83,L12,D49,R71,U7,L72", "U62,R66,U55,R34,D71,R55,D58,R83"])
+    {_, _, intersections} = Aoc3.plot_wires(["R75,D30,R83,U83,L12,D49,R71,U7,L72", "U62,R66,U55,R34,D71,R55,D58,R83"])
 
     assert Aoc3.manhatten_distance(intersections) == 159
   end
@@ -27,8 +26,7 @@ defmodule Aoc3Test do
   end
 
   test "part 2 example 1" do
-    plan =
-      Aoc3.plot_wires(["R75,D30,R83,U83,L12,D49,R71,U7,L72", "U62,R66,U55,R34,D71,R55,D58,R83"])
+    plan = Aoc3.plot_wires(["R75,D30,R83,U83,L12,D49,R71,U7,L72", "U62,R66,U55,R34,D71,R55,D58,R83"])
 
     assert Aoc3.signal_delay(plan) == 610
   end
