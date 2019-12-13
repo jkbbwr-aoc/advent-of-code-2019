@@ -1,4 +1,4 @@
-defmodule Aoc9Test do
+defmodule Aoc11Test do
   use ExUnit.Case, async: true
   import ExUnit.CaptureIO
 
