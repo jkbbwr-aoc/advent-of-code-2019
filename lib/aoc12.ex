@@ -53,29 +53,33 @@ defmodule Aoc12 do
   def load() do
     File.read!("input/12")
     |> String.split("\n")
-    |> Enum.map(fn element ->
-      {x, y, z} =
-        Regex.scan(~r/\-?\d+/, element)
-        |> List.flatten()
-        |> Enum.map(&String.to_integer/1)
-        |> List.to_tuple()
+    |> Enum.map(
+         fn element ->
+           {x, y, z} =
+             Regex.scan(~r/\-?\d+/, element)
+             |> List.flatten()
+             |> Enum.map(&String.to_integer/1)
+             |> List.to_tuple()
 
-      %Moon{x: x, y: y, z: z}
-    end)
+           %Moon{x: x, y: y, z: z}
+         end
+       )
   end
 
   def load(string) do
     String.trim(string)
     |> String.split("\n")
-    |> Enum.map(fn element ->
-      {x, y, z} =
-        Regex.scan(~r/\-?\d+/, element)
-        |> List.flatten()
-        |> Enum.map(&String.to_integer/1)
-        |> List.to_tuple()
+    |> Enum.map(
+         fn element ->
+           {x, y, z} =
+             Regex.scan(~r/\-?\d+/, element)
+             |> List.flatten()
+             |> Enum.map(&String.to_integer/1)
+             |> List.to_tuple()
 
-      %Moon{x: x, y: y, z: z}
-    end)
+           %Moon{x: x, y: y, z: z}
+         end
+       )
   end
 
   def step(moons) do
@@ -101,8 +105,6 @@ defmodule Aoc12 do
 
   def simulate(moons, 0) do
     moons
-    |> Enum.map(&get_energy/1)
-    |> Enum.sum()
   end
 
   def simulate(moons, steps) do
@@ -132,13 +134,19 @@ defmodule Aoc12 do
   def part1() do
     moons = load()
     simulate(moons, 1000)
+    |> Enum.map(&get_energy/1)
+    |> Enum.sum()
   end
 
-  def part2() do
-    moons = load()
+  def universe(moons) do
     x = find_repeating(moons, fn m -> {m.x, m.vx} end)
     y = find_repeating(moons, fn m -> {m.y, m.vy} end)
     z = find_repeating(moons, fn m -> {m.z, m.vz} end)
     lcm(lcm(x, y), z)
+  end
+
+  def part2() do
+    moons = load()
+    universe(moons)
   end
 end
