@@ -22,6 +22,7 @@ defmodule Aoc12Test do
       %Aoc12.Moon{x: 3, y: -6, z: 1, vx: 3, vy: 2, vz: -3},
       %Aoc12.Moon{x: 2, y: 0, z: 4, vx: 1, vy: -1, vz: -1}
     ]
+
     assert Aoc12.simulate(Aoc12.load(@pos1), 10) == results
   end
 
@@ -30,10 +31,10 @@ defmodule Aoc12Test do
   end
 
   test "part 2 exercise 1" do
-    assert Aoc12.universe(Aoc12.load(@pos2)) == 4686774924
+    assert Aoc12.universe(Aoc12.load(@pos2)) == 4_686_774_924
   end
 
   test "part 2" do
-    assert Aoc12.part2() == 353620566035124
+    assert Aoc12.part2() == 353_620_566_035_124
   end
 end
