@@ -23,6 +23,7 @@ defmodule Aoc.MixProject do
     [
       {:benchee, "~> 1.0", only: :dev},
       {:egd, github: "erlang/egd"},
+      {:libgraph, "~> 0.7"},
       {:exprof, "~> 0.2.0"},
       {:eflame, ~r/.*/, git: "https://github.com/proger/eflame.git", compile: "rebar compile"}
     ]
