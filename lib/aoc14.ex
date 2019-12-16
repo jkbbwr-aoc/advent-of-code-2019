@@ -11,7 +11,7 @@ defmodule Factory do
         produced: 0,
         inventory: inventory,
         inputs: inputs,
-        disabled: true,
+        disabled: true
       },
       name: name
     )
@@ -54,7 +54,7 @@ defmodule Factory do
   end
 
   @impl true
-  def handle_call({:request, amount}, _from, %Factory{disabled: true} = state) do
+  def handle_call({:request, _amount}, _from, %Factory{disabled: true} = state) do
     {:reply, :stop, state}
   end
 
@@ -65,18 +65,19 @@ defmodule Factory do
 
     batches = Kernel.trunc(:math.ceil(amount / state.batch_size))
 
-    results = Enum.map(
-                1..batches,
-                fn _ ->
-                  Enum.map(
-                    state.inputs,
-                    fn {item, amount} ->
-                      Factory.request(item, amount)
-                    end
-                  )
-                end
-              )
-              |> List.flatten
+    results =
+      Enum.map(
+        1..batches,
+        fn _ ->
+          Enum.map(
+            state.inputs,
+            fn {item, amount} ->
+              Factory.request(item, amount)
+            end
+          )
+        end
+      )
+      |> List.flatten()
 
     if Enum.any?(results, fn x -> x == :stop end) do
       {:reply, :stop, %Factory{state | disabled: true}}
@@ -85,13 +86,12 @@ defmodule Factory do
         :reply,
         amount,
         %Factory{
-          state |
-          inventory: batches * state.batch_size - amount,
-          produced: state.produced + batches * state.batch_size
+          state
+          | inventory: batches * state.batch_size - amount,
+            produced: state.produced + batches * state.batch_size
         }
       }
     end
-
   end
 end
 
@@ -102,12 +102,10 @@ defmodule Aoc14 do
 
   def extract_inputs(line) do
     Regex.scan(@match_components, line)
-    |> Enum.map(
-         fn [x] ->
-           {count, rest} = Integer.parse(x)
-           {String.trim(rest), count}
-         end
-       )
+    |> Enum.map(fn [x] ->
+      {count, rest} = Integer.parse(x)
+      {String.trim(rest), count}
+    end)
   end
 
   def load_novel() do
@@ -115,13 +113,11 @@ defmodule Aoc14 do
     |> String.trim()
     |> String.split("\n")
     |> Enum.map(fn x -> String.split(x, "=>") end)
-    |> Enum.map(
-         fn [input, output] ->
-           {count, rest} = Integer.parse(String.trim(output))
-           {{String.trim(rest), count}, extract_inputs(input)}
-         end
-       )
-    |> Enum.reverse
+    |> Enum.map(fn [input, output] ->
+      {count, rest} = Integer.parse(String.trim(output))
+      {{String.trim(rest), count}, extract_inputs(input)}
+    end)
+    |> Enum.reverse()
   end
 
   def load_novel(string) do
@@ -129,13 +125,11 @@ defmodule Aoc14 do
     |> String.trim()
     |> String.split("\n")
     |> Enum.map(fn x -> String.split(x, "=>") end)
-    |> Enum.map(
-         fn [input, output] ->
-           {count, rest} = Integer.parse(String.trim(output))
-           {{String.trim(rest), count}, extract_inputs(input)}
-         end
-       )
-    |> Enum.reverse
+    |> Enum.map(fn [input, output] ->
+      {count, rest} = Integer.parse(String.trim(output))
+      {{String.trim(rest), count}, extract_inputs(input)}
+    end)
+    |> Enum.reverse()
   end
 
   def build({name, count}) do
@@ -146,29 +140,32 @@ defmodule Aoc14 do
   end
 
   def score(string) do
-    map = load(string)
-          |> Enum.into(%{})
+    map =
+      load_novel(string)
+      |> Enum.into(%{})
+
     Enum.each(
       map,
       fn {{name, batch}, children} ->
         Factory.start_link(String.to_atom(name), batch, Enum.map(children, fn {x, y} -> {String.to_atom(x), y} end))
       end
     )
+
     Factory.request(:FUEL, 1)
   end
 
   def part1() do
-    processes = load_novel()
-                |> Enum.into(%{})
-                |> Enum.map(
-                     fn {{name, batch}, children} ->
-                       Factory.start_link(
-                         String.to_atom(name),
-                         batch,
-                         Enum.map(children, fn {x, y} -> {String.to_atom(x), y} end)
-                       )
-                     end
-                   )
+    processes =
+      load_novel()
+      |> Enum.into(%{})
+      |> Enum.map(fn {{name, batch}, children} ->
+        Factory.start_link(
+          String.to_atom(name),
+          batch,
+          Enum.map(children, fn {x, y} -> {String.to_atom(x), y} end)
+        )
+      end)
+
     {:ok, pid} = Factory.start_link(:ORE, 1, [])
     Factory.request(:FUEL, 1)
     result = Factory.state(:ORE).produced
@@ -177,32 +174,37 @@ defmodule Aoc14 do
     result
   end
 
-  def loop(_, count) do
-    loop(Factory.request(:FUEL, 1), count - 1)
-  end
-
   def loop(:stop, 0) do
     Factory.state(:FUEL)
+  end
+
+  def loop(_, count) do
+    loop(Factory.request(:FUEL, 1), count - 1)
   end
 
   # This is a serious solution for part two. As the novel solution is too slow.
 
   def part2() do
-    cookbook = parse_input(
-      File.read!("input/14")
-      |> String.split("\n")
-    )
+    cookbook =
+      parse_input(
+        File.read!("input/14")
+        |> String.split("\n")
+      )
+
     max = ores(1, cookbook) * 1_000_000_000_000
     binary_search(1, max, cookbook)
   end
 
   def binary_search(min, max, _cookbook) when min > max, do: max
+
   def binary_search(min, max, cookbook) do
     fuel = div(min + max, 2)
     ores_quantity = ores(fuel, cookbook)
+
     case ores_quantity <= 1_000_000_000_000 do
       true ->
         binary_search(fuel + 1, max, cookbook)
+
       false ->
         binary_search(min, fuel - 1, cookbook)
     end
@@ -216,6 +218,7 @@ defmodule Aoc14 do
   def produce([{"ORE", need_quantity} | need], cookbook, store, ores) do
     produce(need, cookbook, store, ores + need_quantity)
   end
+
   def produce([{name, need_quantity} | need], cookbook, store, ores) do
     {store, need_quantity} = take_from_store(store, name, need_quantity)
     {prod_quantity, ingredients} = Map.fetch!(cookbook, name)
@@ -226,6 +229,7 @@ defmodule Aoc14 do
     store = update_store(store, name, actual_quantity - need_quantity)
     produce(need, cookbook, store, ores)
   end
+
   def produce([], _, store, ores), do: {store, ores}
 
   def take_from_store(store, name, quantity) do
@@ -233,19 +237,20 @@ defmodule Aoc14 do
       %{^name => stored_quantity} ->
         taken = min(quantity, stored_quantity)
         {Map.put(store, name, stored_quantity - taken), quantity - taken}
+
       %{} ->
         {store, quantity}
     end
   end
 
   def update_store(store, name, quantity) do
-    Map.update(store, name, quantity, & &1 + quantity)
+    Map.update(store, name, quantity, &(&1 + quantity))
   end
 
   def parse_input(input) do
     input
     |> Enum.map(&split_line/1)
-    |> Map.new
+    |> Map.new()
   end
 
   def split_line(line) do

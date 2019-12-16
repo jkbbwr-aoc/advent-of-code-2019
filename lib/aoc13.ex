@@ -211,8 +211,10 @@ defmodule Aoc13 do
   end
 
   def part1() do
-    {:halt, _, _, output, _, _} = load()
-                                  |> run([], [])
+    {:halt, _, _, output, _, _} =
+      load()
+      |> run([], [])
+
     output
     |> Enum.chunk_every(3)
     |> Enum.count(fn [x, _, _] -> x == 2 end)
@@ -220,14 +222,17 @@ defmodule Aoc13 do
 
   def cheat(program) do
     hack = load_hack()
-    {_, position} = Enum.find(
-      Enum.with_index(program),
-      fn {_, index} ->
-        Enum.slice(program, index..index + 37) == hack
-      end
-    )
+
+    {_, position} =
+      Enum.find(
+        Enum.with_index(program),
+        fn {_, index} ->
+          Enum.slice(program, index..(index + 37)) == hack
+        end
+      )
+
     Enum.reduce(
-      position..position + 37,
+      position..(position + 37),
       program,
       fn index, acc ->
         List.replace_at(acc, index, 1)
@@ -245,9 +250,11 @@ defmodule Aoc13 do
   end
 
   def part2() do
-    program = load()
-              |> hack()
-              |> cheat()
+    program =
+      load()
+      |> hack()
+      |> cheat()
+
     {:halt, output} = win(:i_am_cheating, program, [], 0, 0)
     Enum.at(output, 0)
   end
