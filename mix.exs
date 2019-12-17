@@ -23,9 +23,7 @@ defmodule Aoc.MixProject do
     [
       {:benchee, "~> 1.0", only: :dev},
       {:egd, github: "erlang/egd"},
-      {:ex_termbox, "~> 0.3"},
-      {:exprof, "~> 0.2.0"},
-      {:eflame, ~r/.*/, git: "https://github.com/proger/eflame.git", compile: "rebar compile"}
+      {:ex_termbox, "~> 0.3"}
     ]
   end
 end
